@@ -82,6 +82,10 @@ public class SuffixTree {
         }
     }
 
+    public int getNodeNum() {
+        return nodeNum;
+    }
+
     private class Node{
         private String value;
         private LinkedList<Node> children;
