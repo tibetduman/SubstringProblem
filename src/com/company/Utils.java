@@ -5,7 +5,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Utils {
@@ -49,16 +50,16 @@ public class Utils {
         if (files == null) {
             return null;
         } else {
-            Arrays.sort(files);
-            return Arrays.asList(files);
+            List<String> unhiddenFiles = new ArrayList<>();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].startsWith(".")) {
+                    continue;
+                }
+                unhiddenFiles.add(files[i]);
+            }
+            Collections.sort(unhiddenFiles);
+            return unhiddenFiles;
         }
-    }
-
-    /** Returns a list of the names of all plain files in the directory DIR, in
-     *  lexicographic order as Java Strings.  Returns null if DIR does
-     *  not denote a directory. */
-    static List<String> plainFilenamesIn(String dir) {
-        return plainFilenamesIn(new File(dir));
     }
 
     static File join(File first, String... others) {

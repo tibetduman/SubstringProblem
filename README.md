@@ -7,8 +7,13 @@ This way the construction of the Suffix Tree does not grow unboundedly large bot
 Yet it requires for a further check at common substrings with length > M/2 characters, see why at Observations.
 
 TO DO:
-Add a further check for common substrings with length > M/2 characters. Do this by extending the substring to the left and right
-until it no longer matches the substring in other indicated file(s).
+Currently the program only works with text files, since it tries to read the contents as a string. Have to make it support
+binary files as well, by simply replacing the Node class and the SuffixTree data structure with a generic type. Also update
+relevant methods/functions accordingly.
+A lot of optimizations are on their way. For instance tracking the candidate answers while building the tree (removing the need
+to traverse the tree at the end.) Removing sub-candidates (the candidates that from the same substring but with only a few characters
+shorter than the longest recorded in the tree, which will be plausible by implementing the first optimization and removing
+sub-candidates while constructing the tree.
 
 
 

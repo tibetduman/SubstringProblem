@@ -7,7 +7,7 @@ public class SuffixTree {
     private int longestSS;
     private Node root;
     private int nodeNum;
-    private HashMap<String, Integer> candidates;
+    private HashMap<String, HashSet<Integer>> candidates;
     public SuffixTree() {
         wholeString = new ArrayList<>();
         nodeNum = 0;
@@ -83,16 +83,57 @@ public class SuffixTree {
     }
 
     public void updatePrintCandidates() {
-        HashMap<String, Integer> placeHolder = new HashMap<>(candidates);
-        for (Map.Entry<String, Integer> entry: placeHolder.entrySet()) {
-            if (entry.getValue() < longestSS / 2) {
-                candidates.remove(entry.getKey());
+        HashMap<String, HashSet<Integer>> placeHolder = new HashMap<>(candidates);
+        for (String s: placeHolder.keySet()) {
+            if (s.length() < longestSS / 2) {
+                candidates.remove(s);
             }
         }
         System.out.println("The remaining candidates are:");
         for (String s : candidates.keySet()) {
             System.out.println(s);
         }
+    }
+
+    public String findLongestSS(ArrayList<String> data) {
+        String longestSubString = "";
+        for (String s: candidates.keySet()) {
+            ArrayList<String> dataOfInterest = new ArrayList<>();
+            for (Integer i: candidates.get(s)) {
+                dataOfInterest.add(data.get(i));
+            }
+            String sExtended = furtherCheck(s, dataOfInterest);
+            if (sExtended.length() > longestSubString.length()) {
+                longestSubString = sExtended;
+            }
+        }
+        return longestSubString;
+    }
+
+    public String furtherCheck(String s, ArrayList<String> dataOfInterest) {
+        String longestExtension = s;
+        for (int i = 0; i < dataOfInterest.size() - 1; i ++) {
+            String first = dataOfInterest.get(i);
+            for (int j = i + 1; j < dataOfInterest.size(); j++) {
+                String second = dataOfInterest.get(j);
+                int sf1 = first.indexOf(s);
+                int ef1 = sf1 + s.length();
+                int sf2 = second.indexOf(s);
+                int ef2 = ef1 + s.length();
+                while (sf1 > 0 && sf2 > 0 && first.charAt(sf1) == second.charAt(sf2)) {
+                    sf1--;
+                    sf2--;
+                }
+                while (ef1 < first.length() && ef2 < second.length() && first.charAt(ef1) == second.charAt(ef2)) {
+                    ef1++;
+                    ef2++;
+                }
+                if (ef1 - sf1 > longestExtension.length()) {
+                    longestExtension = dataOfInterest.get(i).substring(sf1 + 1, ef1 + 1);
+                }
+            }
+        }
+        return longestExtension;
     }
 
     private class Node{
@@ -160,9 +201,8 @@ public class SuffixTree {
             }
             String whole = soFar + value;
             if (this.getOccurrence() > 1 && whole.length() > longestSS / 2) {
-                candidates.put(whole, whole.length());
+                candidates.put(whole.substring(1), this.fNums);
                 longestSS = Math.max(whole.length(), longestSS);
-                System.out.println(soFar + value + "    " + this.getOccurrence() + " ");
             }
             for (Node n: children) {
                 n.printNode(whole);
