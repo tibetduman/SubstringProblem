@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class SuffixTree {
@@ -8,55 +9,52 @@ public class SuffixTree {
     private int longestSS;
     private Node root;
     private int nodeNum;
-    public SuffixTree(String s) {
+    public SuffixTree() {
         wholeString = new ArrayList<>();
         nodeNum = 0;
         longestSS = 0;
-        wholeString.add(s);
-        root = new Node("root");
-        fillSuffixTree(s);
+        root = new Node(" ", -1);
     }
 
-    public void fillSuffixTree(String s) {
+    public void fillSuffixTree(String s, int fNum) {
         for (int i = 1; i <= s.length(); i++) {
             String subS = s.substring(0, i);
-            addSuffix(subS);
+            addSuffix(subS, fNum);
         }
     }
 
-    public void addStringToTree(String s) {
-        fillSuffixTree(s);
+    public void addStringToTree(String s, int fileNum) {
+        fillSuffixTree(s, fileNum);
         wholeString.add(s);
     }
 
-    public void addSuffix(String s) {
-        Node node = root;
-        for (Node n: node.children) {
+    public void addSuffix(String s, int fNum) {
+        for (Node n: root.children) {
             if (n.value.equals(s)) {
-                n.increaseOccurrence();
+                n.fNums.add(fNum);
                 return;
             }
             if (n.value.startsWith(s) || s.startsWith(n.value)) {
-                findDeepestNode(node, n, s);
+                findDeepestNode(root, n, s, fNum);
                 if (s.length() > 1) {
-                    addSuffix(s.substring(1));
+                    addSuffix(s.substring(1), fNum);
                 }
                 return;
             }
         }
-        node.addChildren(new Node(s));
+        root.addChildren(new Node(s, fNum));
         if (s.length() > 1) {
-            addSuffix(s.substring(1));
+            addSuffix(s.substring(1), fNum);
         }
     }
 
-    public void branch(Node parent, Node node, String s) {
-        Node splittedNode = node.splitNode(s);
+    public void branch(Node parent, Node node, String s, int fNum) {
+        Node splittedNode = node.splitNode(s, fNum);
         parent.removeChildren(node);
         parent.addChildren(splittedNode);
     }
 
-    public void findDeepestNode(Node parent, Node child, String s) {
+    public void findDeepestNode(Node parent, Node child, String s, int fNum) {
         int index = 0;
         while (index < s.length() &&  index < child.value.length()) {
             if (s.charAt(index) != child.value.charAt(index)) {
@@ -68,18 +66,16 @@ public class SuffixTree {
         String remaining = s.substring(index);
         for (Node n: child.children) {
             if (n.value.startsWith(remaining) || remaining.startsWith(n.value)) {
-                findDeepestNode(child, n, remaining); //have to somehow kill this frame then open a new 0ne
+                findDeepestNode(child, n, remaining, fNum); //have to somehow kill this frame then open a new 0ne
                 return;
             }
         }
-        branch(parent, child, s);
+        branch(parent, child, s, fNum);
     }
 
     public void printSuffixTree() {
         System.out.println("Total number of nodes is: " + nodeNum);
-        for (Node n: root.getChildren()) {
-            n.printNode("");
-        }
+        root.printNode("");
     }
 
     public int getNodeNum() {
@@ -89,16 +85,13 @@ public class SuffixTree {
     private class Node{
         private String value;
         private LinkedList<Node> children;
-        private int occurrence;
+        private HashSet<Integer> fNums;
 
-        private Node(String s) {
+        private Node(String s, int f) {
             value = s;
             children = new LinkedList<>();
-            occurrence = 1;
-        }
-
-        private LinkedList<Node> getChildren() {
-            return children;
+            fNums = new HashSet<>();
+            fNums.add(f);
         }
 
         private void addChildren(Node n) {
@@ -111,15 +104,11 @@ public class SuffixTree {
             nodeNum--;
         }
 
-        private void setOccurrence(int occurrence) {
-            this.occurrence = occurrence;
+        private int getOccurrence() {
+            return this.fNums.size();
         }
 
-        private void increaseOccurrence() {
-            this.occurrence += 1;
-        }
-
-        private Node splitNode(String s) {
+        private Node splitNode(String s, int fNum) {
             int index = 0;
             while (index < s.length() &&  index < value.length()) {
                 if (s.charAt(index) != this.value.charAt(index)) {
@@ -129,14 +118,26 @@ public class SuffixTree {
                 index +=1;
             }
             if (index == value.length() && s.length() > value.length()) {
-                value = s;
+                if (this.getOccurrence() == 1 && fNums.contains(fNum)) {
+                    value = s;
+                } else {
+                    fNums.add(fNum);
+                    this.addChildren(new Node(s.substring(index), fNum));
+                }
                 return this;
             }
-            String longest = value.substring(0, index);
-            Node splitted = new Node(longest);
-            splitted.setOccurrence(2);
-            splitted.addChildren(new Node(value.substring(index)));
-            splitted.addChildren(new Node(s.substring(index)));
+            return split(this, value.substring(0, index),
+                    value.substring(index), s.substring(index), fNum);
+        }
+
+        private Node split(Node n, String common, String previous, String remaining, int fileNum) {
+            Node splitted = new Node(common, -1);
+            Node prev = new Node(previous, -1);
+            splitted.fNums = new HashSet<>(n.fNums);
+            splitted.fNums.add(fileNum);
+            prev.fNums = new HashSet<>(n.fNums);
+            splitted.addChildren(prev);
+            splitted.addChildren(new Node(remaining, fileNum));
             return splitted;
         }
 
@@ -144,9 +145,13 @@ public class SuffixTree {
             if (value.equals("")) {
                 return;
             }
-            System.out.println(soFar + value + "    " + occurrence);
+            String whole = soFar + value;
+            if (this.getOccurrence() > 1 && whole.length() > longestSS) {
+                longestSS = whole.length();
+                System.out.println(soFar + value + "    " + this.getOccurrence() + " ");
+            }
             for (Node n: children) {
-                n.printNode(soFar + value);
+                n.printNode(whole);
             }
         }
     }

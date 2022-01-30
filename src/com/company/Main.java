@@ -15,19 +15,20 @@ public class Main {
     public static final File FILES = join(CWD, "files");
 
     public static void main(String[] args) {
-        // write your code here
         Instant timeBefore = Instant.now();
-        SuffixTree test = new SuffixTree("");
+        SuffixTree test = new SuffixTree();
         //readFromFilesAsBytes();
         ArrayList<String> allData = readFromFiles();
+        int fileNum = 0;
         for (String data: allData) {
             //placeholder to remove the new line character
             data = truncate(data);
             for (int i = 0; i < data.length(); i += 125) {
-                test.addStringToTree(data.substring(i, Math.min(i + 125, data.length() - 1)));
+                test.addStringToTree(data.substring(i, Math.min(i + 125, data.length() - 1)), fileNum);
             }
+            fileNum++;
         }
-        //test.printSuffixTree();
+        test.printSuffixTree();
         System.out.println("Number of nodes is: " + test.getNodeNum());
         Instant timeAfter = Instant.now();
         Duration duration = Duration.between(timeBefore, timeAfter);
