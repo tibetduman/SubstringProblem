@@ -29,6 +29,7 @@ public class Main {
             fileNum++;
         }
         test.printSuffixTree();
+        test.updatePrintCandidates();
         System.out.println("Number of nodes is: " + test.getNodeNum());
         Instant timeAfter = Instant.now();
         Duration duration = Duration.between(timeBefore, timeAfter);

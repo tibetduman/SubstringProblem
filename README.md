@@ -7,7 +7,6 @@ This way the construction of the Suffix Tree does not grow unboundedly large bot
 Yet it requires for a further check at common substrings with length > M/2 characters, see why at Observations.
 
 TO DO:
-Implement the tracking and checking of longest common substrings between files (right now does not check if from different files)
 Add a further check for common substrings with length > M/2 characters. Do this by extending the substring to the left and right
 until it no longer matches the substring in other indicated file(s).
 

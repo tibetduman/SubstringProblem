@@ -1,19 +1,19 @@
 package com.company;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 
 public class SuffixTree {
     private ArrayList<String> wholeString;
     private int longestSS;
     private Node root;
     private int nodeNum;
+    private HashMap<String, Integer> candidates;
     public SuffixTree() {
         wholeString = new ArrayList<>();
         nodeNum = 0;
         longestSS = 0;
         root = new Node(" ", -1);
+        candidates = new HashMap<>();
     }
 
     public void fillSuffixTree(String s, int fNum) {
@@ -82,6 +82,19 @@ public class SuffixTree {
         return nodeNum;
     }
 
+    public void updatePrintCandidates() {
+        HashMap<String, Integer> placeHolder = new HashMap<>(candidates);
+        for (Map.Entry<String, Integer> entry: placeHolder.entrySet()) {
+            if (entry.getValue() < longestSS / 2) {
+                candidates.remove(entry.getKey());
+            }
+        }
+        System.out.println("The remaining candidates are:");
+        for (String s : candidates.keySet()) {
+            System.out.println(s);
+        }
+    }
+
     private class Node{
         private String value;
         private LinkedList<Node> children;
@@ -146,8 +159,9 @@ public class SuffixTree {
                 return;
             }
             String whole = soFar + value;
-            if (this.getOccurrence() > 1 && whole.length() > longestSS) {
-                longestSS = whole.length();
+            if (this.getOccurrence() > 1 && whole.length() > longestSS / 2) {
+                candidates.put(whole, whole.length());
+                longestSS = Math.max(whole.length(), longestSS);
                 System.out.println(soFar + value + "    " + this.getOccurrence() + " ");
             }
             for (Node n: children) {
